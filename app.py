@@ -3,7 +3,7 @@ import streamlit as st
 import pickle
 
 # Cargar el modelo
-with open("model.pkl", "rb") as model_file:
+with open("Model/model.pkl", "rb") as model_file:
     model = pickle.load(model_file)
 
 # Cargar el dataset
