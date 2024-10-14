@@ -1,29 +1,44 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 import pickle
 
-# Cargar el modelo entrenado
-with open('Model/model.pkl', 'rb') as f:
-    model = pickle.load(f)
+# Cargar el modelo
+with open("model.pkl", "rb") as model_file:
+    model = pickle.load(model_file)
 
-# Crear la interfaz de Streamlit
-st.title('Real Estate Price Prediction')
+# Cargar el dataset
+real_estate_data = pd.read_csv("Data/Real_Estate.csv")  # Reemplaza la ruta según sea necesario
 
-# Crear entradas para las características
-distance_to_mrt = st.number_input('Distance to MRT Station (meters)', min_value=0.0, step=1.0)
-num_convenience_stores = st.number_input('Number of Convenience Stores', min_value=0, step=1)
-latitude = st.number_input('Latitude', min_value=0.0, step=0.01)
-longitude = st.number_input('Longitude', min_value=0.0, step=0.01)
+# Cambiar el nombre de las columnas para que coincidan con las que usas
+real_estate_data.rename(columns={
+    'Distance to the nearest MRT station': 'distance_to_mrt',
+    'Number of convenience stores': 'num_convenience_stores',
+    'Latitude': 'latitude',
+    'Longitude': 'longitude'
+}, inplace=True)
 
-# Botón para hacer la predicción
-if st.button('Predict'):
-    # Crear el dataframe con las características de entrada
-    input_data = pd.DataFrame([[distance_to_mrt, num_convenience_stores, latitude, longitude]], 
-                              columns=['distance_to_mrt', 'num_convenience_stores', 'latitude', 'longitude'])
+# Título de la aplicación
+st.title("Predicción de Precios de Bienes Raíces")
+
+# Crear dos columnas
+col1, col2 = st.columns(2)
+
+# Inputs en la primera columna
+with col1:
+    distance_to_mrt = st.number_input('Distancia a la estación de MRT (metros)', min_value=0)
+    num_convenience_stores = st.number_input('Número de tiendas de conveniencia', min_value=0)
     
-    # Hacer la predicción
-    prediction = model.predict(input_data)[0]
-    
-    # Mostrar el resultado
-    st.success(f'The predicted house price of unit area is: {prediction:.2f}')
+# Inputs en la segunda columna
+with col2:
+    latitude = st.number_input('Latitud', format="%.6f")
+    longitude = st.number_input('Longitud', format="%.6f")
 
+# Botón para predecir el precio
+if st.button('Predecir Precio'):
+    # Preparar el vector de características
+    features = pd.DataFrame([[distance_to_mrt, num_convenience_stores, latitude, longitude]],
+                            columns=['distance_to_mrt', 'num_convenience_stores', 'latitude', 'longitude'])
+    
+    # Predecir
+    prediction = model.predict(features)[0]
+    st.success(f'Precio predicho por unidad de área: {prediction:.2f}')
